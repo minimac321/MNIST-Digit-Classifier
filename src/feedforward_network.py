@@ -3,8 +3,13 @@ import copy
 import numpy as np
 from tqdm import tqdm
 
-from src.neural_network_utils import apply_activation_function, softmax, \
-    apply_derivative_activation_function, cross_entropy_error, l_rate_scheduler
+from src.neural_network_utils import (
+    apply_activation_function,
+    softmax,
+    apply_derivative_activation_function,
+    cross_entropy_error,
+    l_rate_scheduler,
+)
 
 
 class FeedForwardNeuralNetwork:
@@ -18,90 +23,104 @@ class FeedForwardNeuralNetwork:
 
         # initialize the model parameters, including the first and second layer
         # parameters and biases
-        self.first_layer['weights'] = np.random.uniform(
-            low=-np.sqrt(2 / hidden), high=np.sqrt(2 / hidden),
-            size=(hidden, inputs)
+        self.first_layer["weights"] = np.random.uniform(
+            low=-np.sqrt(2 / hidden), high=np.sqrt(2 / hidden), size=(hidden, inputs)
         )
-        self.first_layer['bias'] = np.random.uniform(
-            low=-np.sqrt(2 / hidden), high=np.sqrt(2 / hidden),
-            size=(hidden, 1)
+        self.first_layer["bias"] = np.random.uniform(
+            low=-np.sqrt(2 / hidden), high=np.sqrt(2 / hidden), size=(hidden, 1)
         )
-        self.second_layer['weights'] = np.random.uniform(
-            low=-np.sqrt(2 / outputs), high=np.sqrt(2 / outputs),
-            size=(outputs, hidden)
+        self.second_layer["weights"] = np.random.uniform(
+            low=-np.sqrt(2 / outputs), high=np.sqrt(2 / outputs), size=(outputs, hidden)
         )
-        self.second_layer['bias'] = np.random.uniform(
-            low=-np.sqrt(2 / outputs), high=np.sqrt(2 / outputs),
-            size=(outputs, 1)
+        self.second_layer["bias"] = np.random.uniform(
+            low=-np.sqrt(2 / outputs), high=np.sqrt(2 / outputs), size=(outputs, 1)
         )
 
-    def _forward_propagation(self, x: np.array):
+    def _forward_propagation(self, x: np.array) -> dict:
+        assert x.shape == (1, 784), x.shape
         # implement the forward computation, calculation of prediction list and error
-        hidden_layer_input = np.matmul(self.first_layer['weights'], x.T).reshape(
-            (self.hid_size, 1)) + \
-                             self.first_layer['bias']
+        hidden_layer_input = (
+            np.matmul(self.first_layer["weights"], x.T).reshape((self.hid_size, 1))
+            + self.first_layer["bias"]
+        )
 
         hidden_layer_output = np.array(apply_activation_function(hidden_layer_input)).reshape(
-            (self.hid_size, 1))
-        final_layer_input = np.matmul(self.second_layer['weights'], hidden_layer_output).reshape(
-            (self.output_size, 1)) + \
-                            self.second_layer['bias']
+            (self.hid_size, 1)
+        )
+        final_layer_input = (
+            np.matmul(self.second_layer["weights"], hidden_layer_output).reshape(
+                (self.output_size, 1)
+            )
+            + self.second_layer["bias"]
+        )
         predict_list = np.squeeze(softmax(final_layer_input))
 
         results = {
-            'hidden_layer_input': hidden_layer_input,  # Z
-            'hidden_layer_output': hidden_layer_output,  # H
-            'final_layer_input': final_layer_input,  # U
-            'predicted_values': predict_list.reshape((1, self.output_size)),
+            "hidden_layer_input": hidden_layer_input,  # Z
+            "hidden_layer_output": hidden_layer_output,  # H
+            "final_layer_input": final_layer_input,  # U
+            "predicted_values": predict_list.reshape((1, self.output_size)),
         }
         return results
 
     def _back_propagation(self, x, y, f_result: dict):
-        """ Implement the back propagation process, compute the gradients """
+        """Implement the back propagation process, compute the gradients"""
         true_label = np.array([0] * self.output_size).reshape((1, self.output_size))
         true_label[0][y] = 1
-        y_hat = true_label - f_result['predicted_values']
-        final_layer_output_error = (-(y_hat).reshape((self.output_size, 1)))  # dU
+        y_hat = true_label - f_result["predicted_values"]
+        final_layer_output_error = -(y_hat).reshape((self.output_size, 1))  # dU
         bias_2_error = copy.copy(final_layer_output_error)  # db_2
 
-        final_layer_error_gradient = np.matmul(final_layer_output_error,
-                                               f_result['hidden_layer_output'].T)
-        hidden_layer_input_error = np.matmul(self.second_layer['weights'].T,
-                                             final_layer_output_error)
-        hidden_layer_output_error = hidden_layer_input_error.reshape(self.hid_size, 1) * \
-                                    apply_derivative_activation_function(
-                                        f_result['hidden_layer_input']).reshape(self.hid_size, 1)
+        final_layer_error_gradient = np.matmul(
+            final_layer_output_error, f_result["hidden_layer_output"].T
+        )
+        hidden_layer_input_error = np.matmul(
+            self.second_layer["weights"].T, final_layer_output_error
+        )
+        hidden_layer_output_error = hidden_layer_input_error.reshape(
+            self.hid_size, 1
+        ) * apply_derivative_activation_function(f_result["hidden_layer_input"]).reshape(
+            self.hid_size, 1
+        )
 
         hidden_layer_error_gradient = np.matmul(
-            hidden_layer_output_error.reshape((self.hid_size, 1)), x.reshape((1, 784)))
+            hidden_layer_output_error.reshape((self.hid_size, 1)), x.reshape((1, 784))
+        )
 
         grad = {
-            'final_layer_error_gradient': final_layer_error_gradient,
-            'final_layer_output_error': final_layer_output_error,
-            'hidden_layer_output_error': hidden_layer_output_error,
-            'hidden_layer_error_gradient': hidden_layer_error_gradient
+            "final_layer_error_gradient": final_layer_error_gradient,
+            "final_layer_output_error": final_layer_output_error,
+            "hidden_layer_output_error": hidden_layer_output_error,
+            "hidden_layer_error_gradient": hidden_layer_error_gradient,
         }
         return grad
 
     def _optimize_parameters(self, b_result: dict, learning_rate: float):
         # update the hyperparameters
-        self.second_layer['weights'] -= learning_rate * b_result['final_layer_error_gradient']
-        self.second_layer['bias'] -= learning_rate * b_result['final_layer_output_error']
-        self.first_layer['weights'] -= learning_rate * b_result['hidden_layer_error_gradient']
-        self.first_layer['bias'] -= learning_rate * b_result['hidden_layer_output_error']
+        self.second_layer["weights"] -= learning_rate * b_result["final_layer_error_gradient"]
+        self.second_layer["bias"] -= learning_rate * b_result["final_layer_output_error"]
+        self.first_layer["weights"] -= learning_rate * b_result["hidden_layer_error_gradient"]
+        self.first_layer["bias"] -= learning_rate * b_result["hidden_layer_output_error"]
 
-    def train(self,
-              x_train: np.array, y_train: np.array, x_valid: np.array, y_valid: np.array,
-              epochs: int, batch_size: int, learning_rate: float
-              ) -> tuple[dict, dict]:
+    def train(
+        self,
+        x_train: np.array,
+        y_train: np.array,
+        x_valid: np.array,
+        y_valid: np.array,
+        epochs: int,
+        batch_size: int,
+        learning_rate: float,
+    ) -> tuple[dict, dict]:
         loss_dict = {}
         validation_scores = []
         for i_epoch in tqdm(range(epochs)):
             if batch_size is None or batch_size >= len(x_train):
                 sample_idx = list(range(len(x_train)))
             else:
-                sample_idx = np.random.choice(range(x_train.shape[0]), size=batch_size,
-                                              replace=True)
+                sample_idx = np.random.choice(
+                    range(x_train.shape[0]), size=batch_size, replace=True
+                )
 
             # Iterate over all samples for epoch
             epoch_loss = []
@@ -116,10 +135,12 @@ class FeedForwardNeuralNetwork:
 
                 b_result = self._back_propagation(selected_sample, sample_label, f_result)
                 self._optimize_parameters(
-                    b_result, l_rate_scheduler(
-                        base_rate=learning_rate, current_iter=learning_rate,
-                        num_iterations=len(sample_idx)
-                    )
+                    b_result,
+                    l_rate_scheduler(
+                        base_rate=learning_rate,
+                        current_iter=learning_rate,
+                        num_iterations=len(sample_idx),
+                    ),
                 )
 
             loss_dict[i_epoch] = np.array(epoch_loss).mean()
@@ -130,21 +151,30 @@ class FeedForwardNeuralNetwork:
                 print(f"Current epoch: {i_epoch}. Validation score = {validation_score}")
 
         validation_dict = {i: val_score for i, val_score in enumerate(validation_scores)}
-        print('Neural Network training finished')
+        print("Neural Network training finished")
         return loss_dict, validation_dict
 
+    def predict(self, input_data):
+        if input_data.shape == (28, 28):
+            input_data = input_data.reshape((1, 784))
+
+        f_result = self._forward_propagation(input_data)
+        predicted_label = np.argmax(np.squeeze(f_result["predicted_values"]))
+        return predicted_label
+
     def testing(self, x_test: np.array, y_test: np.array) -> float:
-        """ test the model on a given dataset """
+        """test the model on a given dataset"""
         total_correct = 0
         for n in range(len(x_test)):
             y = y_test[n]
             x = x_test[n][:]
-            f_result = self._forward_propagation(x)
-            prediction = np.argmax(np.squeeze(f_result['predicted_values']))
+            prediction = self.predict(x)
+            # f_result = self._forward_propagation(x)
+            # prediction = np.argmax(np.squeeze(f_result['predicted_values']))
 
             if prediction == y:
                 total_correct += 1
 
         accuracy = total_correct / len(x_test)
-        print(f'Accuracy Test: {accuracy:.3f}')
+        print(f"Accuracy Test: {accuracy:.3f}")
         return accuracy
