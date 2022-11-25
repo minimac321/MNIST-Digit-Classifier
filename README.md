@@ -1,2 +1,2 @@
 # MNIST-TensorFlow
-Solve the classical MNIST dataset by implementing a convulutional neural network multiclass image classification 
+Solve the classical MNIST dataset by implementing a convolutional neural network multiclass image classification 
