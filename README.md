@@ -1,9 +1,8 @@
 # MNIST-TensorFlow
-Solve the classical MNIST dataset by implementing a convolutional neural network multiclass image classification 
+Solve the classical MNIST multiclass image classification problem by creating a Feed Forward
+Neural Network from scratch.
 
-
-Neural Networks
-Implement the following to build a Neural Network:
+Methods Implemented:
 - Activation Functions
 - Gradients
 - Forward Propagation
@@ -13,14 +12,38 @@ Implement the following to build a Neural Network:
 - Weight updates
 - Full train cycle
 
+
 Activation Functions
-![Activation Functions](input/activation_functions.png)
+<img src="input/activation_functions.png" alt="activation_funcs" title="Activation functions" width="400" height="200" /> 
 
-## What is the vanishing gradient problem (with respect to sigmoid function and its gradient) ?
-At points with large positive or negative values, the gradient is very close to zero. As we backpropegate the gradients from end to start of the hidden layers, our gradients generally go from large to small. This means that our initia hidden layers might have gradients of zero - which means no learning is occuring.
 
-Root cause: Squeezing nature of sigmoid and arc-tan.
+## MNIST Solution:
+Problem type: Classification (10 classes)
 
-Solution: Use ReLU
+Neural Network loss function: Cross Entropy  
 
-However, make sure we use the ReLU which can handle negatives.
+
+#### Neural Network Structure
+Create a Neural Network which have the following layers:
+- Input: **784** nodes with a Relu activation function
+- Hidden Layer: **300** Nodes with a Relu activation function
+- Output Layer: **10** Nodes with softmax activation function
+
+#### Training Data
+<img src="input/mnist_digits.png" alt="Kitten" title="MNIST training data" width="450" height="400" /> 
+
+
+#### Training 
+|    Training Loss wrt Iterations    | Training and Validation Accuracy |
+|:----------------------------------:|:--------------------------------:|
+|                                    |                                  |
+| ![](input/loss_wrt_iterations.png) |  ![](input/train_vs_valid.png)   |
+
+
+#### Predictions 
+Example of an image with the true label of 2 and a predicted label of 2.
+<img src="input/predicted_label.png" alt="predicted" title="MNIST predicted label" width="450" height="400" /> 
+
+
+#### Accuracy
+Final Test Set accuracy is **97.1%**
