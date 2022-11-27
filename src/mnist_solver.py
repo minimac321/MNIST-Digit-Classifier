@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
 from src.feedforward_network import FeedForwardNeuralNetwork
-from src.neural_network_utils import transform_mnist_x_data, plot_loss_curve, plot_accuracy_curve
+from src.neural_network_utils import transform_mnist_x_data, plot_loss_curve, plot_accuracy_curve, plot_training_vs_validation_accuracy
 
 
 def load_mnist_data(train_validation_split: float = 0.25, verbose: bool = True):
@@ -66,9 +66,9 @@ def solve_mnist():
         show_mnist_digits(x_train, y_train)
 
     # Set the number of epochs
-    epochs = 100
+    epochs = 150
     # Set the batch size
-    batch_size = 256
+    batch_size = 512
     # Set the base learning rate
     learning_rate = 0.01
     # Number of inputs
@@ -76,11 +76,11 @@ def solve_mnist():
     # Number of outputs
     num_outputs = 10
     # Size of hidden layer
-    hidden_size = 250
+    hidden_size = 300
 
     # data fitting, training and accuracy evaluation
     neural_net = FeedForwardNeuralNetwork(num_inputs, hidden_size, num_outputs)
-    loss_function_dict, validation_dict = neural_net.train(
+    training_scores_dict, loss_function_dict = neural_net.train(
         x_train=x_train,
         y_train=y_train,
         x_valid=x_validation,
@@ -93,7 +93,7 @@ def solve_mnist():
     print(f"Accuracy: {accuracy:.3f}")
 
     plot_loss_curve(loss_function_dict)
-    plot_accuracy_curve(validation_dict, final_test_accuracy=accuracy)
+    plot_training_vs_validation_accuracy(training_scores_dict)
 
     show_test_example = True
     # Show single test image

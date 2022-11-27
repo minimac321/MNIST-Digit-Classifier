@@ -12,16 +12,32 @@ def plot_loss_curve(loss_function_dict):
     plt.show()
 
 
-def plot_accuracy_curve(validation_dict: dict, final_test_accuracy: float = None):
-    title_txt = "Validation accuracy w.r.t. number of iterations"
+def plot_accuracy_curve(validation_dict: dict, accuracy_type: str, final_test_accuracy: float = None):
+    assert accuracy_type in ["training", "validation"]
+    title_txt = f"{accuracy_type.capitalize()} accuracy w.r.t. number of iterations"
     if final_test_accuracy is not None:
-        title_txt += f"\nFinal test accuracy: {final_test_accuracy}"
+        title_txt += f"\nFinal accuracy: {final_test_accuracy}"
 
     plt.plot(validation_dict.keys(), validation_dict.values())
-    plt.ylabel("Validation Accuracy")
+    plt.ylabel(f"{accuracy_type} Accuracy")
     plt.xlabel("Number of iterations")
     plt.xticks(rotation=60)
     plt.title(title_txt)
+    plt.show()
+
+
+def plot_training_vs_validation_accuracy(training_scores_dict: dict):
+    title_txt = f"Training vs Validation accuracy w.r.t. number of iterations"
+
+    training_dict = training_scores_dict["train"]
+    validation_dict = training_scores_dict["validation"]
+    plt.plot(training_dict.keys(), training_dict.values(), label="training")
+    plt.plot(validation_dict.keys(), validation_dict.values(), label="validation")
+    plt.ylabel(f"Accuracy")
+    plt.xlabel("Number of iterations")
+    plt.xticks(rotation=60)
+    plt.title(title_txt)
+    plt.legend(loc="best")
     plt.show()
 
 
@@ -56,7 +72,6 @@ def softmax(x):
 
 def cross_entropy_error(v, y):
     # implement the cross entropy error
-    # x_vals = np.squeeze(x)
     return -np.log(v[0][y])
 
 

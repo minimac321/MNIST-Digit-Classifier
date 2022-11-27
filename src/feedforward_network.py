@@ -112,8 +112,9 @@ class FeedForwardNeuralNetwork:
         batch_size: int,
         learning_rate: float,
     ) -> tuple[dict, dict]:
+
         loss_dict = {}
-        validation_scores = []
+        training_scores, validation_scores = [], []
         for i_epoch in tqdm(range(epochs)):
             if batch_size is None or batch_size >= len(x_train):
                 sample_idx = list(range(len(x_train)))
@@ -146,13 +147,20 @@ class FeedForwardNeuralNetwork:
             loss_dict[i_epoch] = np.array(epoch_loss).mean()
 
             if i_epoch % 5 == 0:
+                training_score = self.testing(x_train[sample_idx], y_train[sample_idx])
+                training_scores.append(training_score)
                 validation_score = self.testing(x_valid, y_valid)
                 validation_scores.append(validation_score)
-                print(f"Current epoch: {i_epoch}. Validation score = {validation_score}")
+                print(f"Current epoch: {i_epoch}.\n"
+                      f"Training accuracy = {training_score:.3f}. "
+                      f"Validation score = {validation_score:.3f}")
 
-        validation_dict = {i: val_score for i, val_score in enumerate(validation_scores)}
+        training_dict = {
+            "train": {i: train_score for i, train_score in enumerate(training_scores)},
+            "validation": {i: val_score for i, val_score in enumerate(validation_scores)},
+        }
         print("Neural Network training finished")
-        return loss_dict, validation_dict
+        return training_dict, loss_dict
 
     def predict(self, input_data):
         if input_data.shape == (28, 28):
@@ -162,19 +170,24 @@ class FeedForwardNeuralNetwork:
         predicted_label = np.argmax(np.squeeze(f_result["predicted_values"]))
         return predicted_label
 
-    def testing(self, x_test: np.array, y_test: np.array) -> float:
+    def testing(self, x_test: np.array, y_test: np.array, n_samples_percent: float = 1.0) -> float:
         """test the model on a given dataset"""
+        n_samples = int(len(x_test) * n_samples_percent)
+        if n_samples_percent == 1.0:
+            sample_idx = list(range(len(x_test)))
+        else:
+            sample_idx = np.random.choice(
+                range(x_test.shape[0]), size=n_samples, replace=False
+            )
+
         total_correct = 0
-        for n in range(len(x_test)):
-            y = y_test[n]
-            x = x_test[n][:]
+        for sample_idx in sample_idx:
+            y = y_test[sample_idx]
+            x = x_test[sample_idx][:]
             prediction = self.predict(x)
-            # f_result = self._forward_propagation(x)
-            # prediction = np.argmax(np.squeeze(f_result['predicted_values']))
 
             if prediction == y:
                 total_correct += 1
 
         accuracy = total_correct / len(x_test)
-        print(f"Accuracy Test: {accuracy:.3f}")
         return accuracy
