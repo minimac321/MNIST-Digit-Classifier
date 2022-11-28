@@ -1,4 +1,4 @@
-# MNIST-TensorFlow
+# Digit Classifier - MNIST
 Solve the classical MNIST multiclass image classification problem by creating a Feed Forward
 Neural Network from scratch.
 
@@ -13,7 +13,7 @@ Methods Implemented:
 - Full train cycle
 
 
-Activation Functions
+#### Activation Functions:
 <img src="input/activation_functions.png" alt="activation_funcs" title="Activation functions" width="400" height="200" /> 
 
 
@@ -41,9 +41,8 @@ Create a Neural Network which have the following layers:
 
 
 #### Predictions 
-Example of an image with the true label of 2 and a predicted label of 2.
 <img src="input/predicted_label.png" alt="predicted" title="MNIST predicted label" width="450" height="400" /> 
-
+Example of an image with the true label of 2 and a predicted label of 2.
 
 #### Accuracy
 Final Test Set accuracy is **97.1%**
